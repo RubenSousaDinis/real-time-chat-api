@@ -30,7 +30,7 @@ class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
         author = data['from']
         text = data['text']
-        author_user = User.objects.get_or_create(username=author)
+        author_user, created = User.objects.get_or_create(username=author)
         message = Message.objects.create(author=author_user, content=text)
         content = {
             'command': 'new_message',
@@ -78,7 +78,6 @@ class ChatConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
-        print(data)
         self.commands[data['command']](self, data)
 
     def send_message(self, message):
