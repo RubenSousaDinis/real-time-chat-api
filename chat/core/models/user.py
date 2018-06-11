@@ -28,6 +28,5 @@ class User(AbstractUser):
         self.save()
 
     def unread_messages(self):
-        return Message.objects.order_by('created_at') \
-                              .filter(created_at__gt=self.last_read_date) \
+        return Message.objects.filter(created_at__gt=self.last_read_date) \
                               .count()

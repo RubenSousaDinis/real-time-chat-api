@@ -7,20 +7,20 @@ from chat.core.models.message import Message
 
 class ChatConsumer(WebsocketConsumer):
 
-    def login(self, data):
+    def init_chat(self, data):
         username = data['username']
         user, created = User.objects.get_or_create(username=username)
         content = {
-            'command': 'login'
+            'command': 'init_chat'
         }
         if not user:
             content['error'] = 'Unable to get or create User with username: ' + username
             self.send_message(content)
-        content['success'] = 'Logged in with success with username: ' + username
+        content['success'] = 'Chatting in with success with username: ' + username
         self.send_message(content)
 
     def fetch_messages(self, data):
-        messages = Message.objects.order_by('-created_at').all()[:50]
+        messages = Message.last_50_messages()
         content = {
             'command': 'messages',
             'messages': self.messages_to_json(messages)
@@ -30,7 +30,7 @@ class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
         author = data['from']
         text = data['text']
-        author_user = User.objects.get(username=author)
+        author_user = User.objects.get_or_create(username=author)
         message = Message.objects.create(author=author_user, content=text)
         content = {
             'command': 'new_message',
@@ -53,7 +53,7 @@ class ChatConsumer(WebsocketConsumer):
         }
 
     commands = {
-        'login': login,
+        'init_chat': init_chat,
         'fetch_messages': fetch_messages,
         'new_message': new_message
     }
@@ -97,7 +97,5 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from room group
     def chat_message(self, event):
         message = event['message']
-        print(message)
-
         # Send message to WebSocket
         self.send(text_data=json.dumps(message))

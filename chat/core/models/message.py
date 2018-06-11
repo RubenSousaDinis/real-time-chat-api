@@ -2,7 +2,6 @@ import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 
 def validate_message_content(content):
@@ -31,8 +30,6 @@ class Message(models.Model):
     )
     content = models.TextField(validators=[validate_message_content])
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
-    received_at = models.DateTimeField(null=True, blank=True)
 
-    def mark_as_received(self):
-        self.received_at = timezone.now()
-        self.save()
+    def last_50_messages():
+        return Message.objects.order_by('-created_at').all()[:50]
